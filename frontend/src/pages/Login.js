@@ -112,7 +112,7 @@ const Login = () => {
 
             {/* Lien "Mot de passe oublié" */}
             <div className="mb-3 text-center">
-              <Link to="/change-password" className="text-decoration-none">Mot de passe oublié ?</Link>
+              <Link to="/forgot-password" className="text-decoration-none">Mot de passe oublié ?</Link>
             </div>
 
             {/* Boutons radio pour le type d'utilisateur */}

@@ -8,7 +8,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.post('/register', registerUser);
 
 // Route pour la connexion d'un utilisateur
-router.post('/login', userController.loginUser);
+router.post('/login', loginUser); 
 
 // Route pour obtenir le profil de l'utilisateur (protégée par authentification)
 router.get('/profile', authMiddleware, getUserProfile);

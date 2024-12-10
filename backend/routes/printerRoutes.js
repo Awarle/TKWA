@@ -12,7 +12,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 // Routes pour l'inscription et la connexion
 router.post('/register', registerPrinter);
-router.post('/login', printerController.loginPrinter);
+router.post('/login', loginPrinter);
+
 
 // Autres routes pour la gestion des imprimantes
 router.get('/profile', authMiddleware, getPrinterProfile);
