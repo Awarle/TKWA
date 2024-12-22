@@ -50,20 +50,20 @@ const Login = () => {
     }
 
     try {
+      const { email, password, userType } = formData;
       let response;
 
-      if (formData.userType === 'printer') {
-        response = await axios.post('/api/printers/login', formData);
+      if (userType === 'printer') {
+        response = await axios.post('/api/printers/login', { email, password, userType });
         localStorage.setItem('token', response.data.token);
         alert('Connexion Imprimerie réussie');
         navigate('/printer-dashboard');
 
-          // Afficher les données pour le débogage
-          console.log('Données envoyées :', { email, password });
+        // Afficher les données pour le débogage
+        console.log('Données envoyées :', { email: FormData.email, password: FormData.password });
 
-          
       } else {
-        response = await axios.post('/api/users/login', formData);
+        response = await axios.post('/api/users/login', { email, password, userType });
         localStorage.setItem('token', response.data.token);
         alert('Connexion réussie');
         navigate('/upload-document');

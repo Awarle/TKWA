@@ -1,8 +1,23 @@
+// passwordController.js
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const User = require('../models/User');
 const Printer = require('../models/Printer');
 const transporter = require('../services/emailService');
+
+// Fonction  pour envoyer un e-mail de réinitialisation
+async function sendResetEmail(email, userType, resetToken) {
+  const resetURL = `http://localhost:3000/change-password/${resetToken}`;
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Réinitialisation de votre mot de passe',
+    text: `Vous recevez cet e-mail parce que vous (ou quelqu'un d'autre) avez demandé la réinitialisation du mot de passe de votre compte ${userType}.\n\nCliquez sur le lien suivant pour réinitialiser votre mot de passe :\n\n${resetURL}\n\nSi vous n'avez pas demandé cette réinitialisation, veuillez ignorer cet e-mail.\n`,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
 
 // Fonction pour changer le mot de passe d'un utilisateur (authentifié)
 exports.changeUserPassword = async (req, res) => {
@@ -19,7 +34,6 @@ exports.changeUserPassword = async (req, res) => {
     }
 
     const user = await User.findById(req.user.id);
-
     if (!user) {
       return res.status(404).json({ message: 'Utilisateur non trouvé.' });
     }
@@ -34,6 +48,7 @@ exports.changeUserPassword = async (req, res) => {
 
     res.status(200).json({ message: 'Mot de passe utilisateur mis à jour avec succès.' });
   } catch (error) {
+    console.error('Erreur lors du changement de mot de passe utilisateur :', error);
     res.status(500).json({ message: 'Erreur lors du changement de mot de passe utilisateur.' });
   }
 };
@@ -53,7 +68,6 @@ exports.changePrinterPassword = async (req, res) => {
     }
 
     const printer = await Printer.findById(req.user.id);
-
     if (!printer) {
       return res.status(404).json({ message: 'Imprimerie non trouvée.' });
     }
@@ -68,6 +82,7 @@ exports.changePrinterPassword = async (req, res) => {
 
     res.status(200).json({ message: 'Mot de passe imprimante mis à jour avec succès.' });
   } catch (error) {
+    console.error('Erreur lors du changement de mot de passe imprimante :', error);
     res.status(500).json({ message: 'Erreur lors du changement de mot de passe imprimante.' });
   }
 };
@@ -94,25 +109,17 @@ exports.forgotPassword = async (req, res) => {
     const resetToken = crypto.randomBytes(32).toString('hex');
     const resetTokenExpiry = Date.now() + 3600000; // 1 heure
 
-    // Stocker le token et son expiration dans l'utilisateur
+    // Stocker le token et son expiration dans l'utilisateur ou l'imprimerie
     user.resetPasswordToken = resetToken;
     user.resetPasswordExpires = resetTokenExpiry;
     await user.save();
 
     // Envoyer l'e-mail avec le lien de réinitialisation
-    const resetURL = `http://localhost:3000/reset-password/${resetToken}`;
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Réinitialisation de votre mot de passe',
-      text: `Vous recevez cet e-mail parce que vous (ou quelqu'un d'autre) avez demandé la réinitialisation du mot de passe de votre compte ${userType}.\n\nCliquez sur le lien suivant pour réinitialiser votre mot de passe :\n\n${resetURL}\n\nSi vous n'avez pas demandé cette réinitialisation, veuillez ignorer cet e-mail.\n`,
-    };
-
-    await transporter.sendMail(mailOptions);
+    await sendResetEmail(email, userType, resetToken);
 
     res.status(200).json({ message: 'E-mail de réinitialisation envoyé.' });
   } catch (error) {
+    console.error('Erreur lors de la demande de réinitialisation du mot de passe:', error);
     res.status(500).json({ message: 'Erreur lors de la demande de réinitialisation du mot de passe.' });
   }
 };
@@ -159,6 +166,7 @@ exports.resetPassword = async (req, res) => {
 
     res.status(200).json({ message: 'Mot de passe réinitialisé avec succès.' });
   } catch (error) {
+    console.error('Erreur lors de la réinitialisation du mot de passe:', error);
     res.status(500).json({ message: 'Erreur lors de la réinitialisation du mot de passe.' });
   }
 };

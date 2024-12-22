@@ -99,7 +99,7 @@ const PrinterDashboard = () => {
 
     try {
       await axios.put(
-        '/api/printer/update-address',
+        '/api/printers/update-address',
         {
           address,
           postalCode,
